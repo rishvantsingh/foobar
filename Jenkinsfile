@@ -1,9 +1,30 @@
 pipeline {
-    agent any
+    agent none
     stages {
-        stage('Print hello') {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:2-alpine'
+                }
+            }
             steps {
-                echo 'Hello world!'
+                sh 'python main.py'
+        
+            }
+        }
+        stage('Test') { 
+            agent {
+                docker {
+                    image 'qnib/pytest' 
+                }
+            }
+            steps {
+                sh 'py.test --junit-xml test-reports/results.xml tests/test_hello_world.py' 
+            }
+            post {
+                always {
+                    junit 'test-reports/results.xml' 
+                }
             }
         }
     }
